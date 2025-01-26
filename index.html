@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Digital Guest Onboarding</title>
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <!-- Inline CSS -->
+    <style>
+      /* General Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f5f7fa;
+        color: #333;
+        line-height: 1.6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 800px;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      header {
+        text-align: center;
+        padding: 10px 0;
+        background-color: #007bff;
+        color: white;
+        border-radius: 8px;
+      }
+
+      header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      h2 {
+        color: #007bff;
+        margin-bottom: 15px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      form input,
+      form select,
+      form button {
+        padding: 12px;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+
+      form input:focus,
+      form select:focus {
+        border-color: #007bff;
+        outline: none;
+      }
+
+      form button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+
+      form button:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+      }
+
+      .guest-list, .hotel-list {
+        margin-top: 20px;
+        width: 100%;
+      }
+
+      .guest-list ul, .hotel-list table {
+        width: 100%;
+        margin-top: 10px;
+        border-collapse: collapse;
+      }
+
+      .hotel-list th, .hotel-list td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+      }
+
+      .hotel-list th {
+        background-color: #007bff;
+        color: white;
+      }
+
+      footer {
+        text-align: center;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        margin-top: 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+      }
+
+      .hotel-logo {
+        width: 50px;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Digital Guest Onboarding</h1>
+      </header>
+
+      <!-- Add Guest Section -->
+      <h2>Add Guest Details</h2>
+      <form id="guestForm">
+        <input type="text" id="guestName" placeholder="Guest Name" required />
+        <input type="text" id="guestMobile" placeholder="Mobile Number" required />
+        <input type="text" id="guestAddress" placeholder="Address" required />
+
+        <select id="purposeOfVisit" required>
+          <option value="" disabled selected>Purpose of Visit</option>
+          <option value="Business">Business</option>
+          <option value="Personal">Personal</option>
+          <option value="Tourist">Tourist</option>
+        </select>
+
+        <label>
+          Stay Dates:
+          <div style="display: flex; gap: 10px;">
+            <input type="date" id="stayFrom" required />
+            <input type="date" id="stayTo" required />
+          </div>
+        </label>
+
+        <input type="email" id="emailId" placeholder="Email ID" required />
+        <input type="text" id="idProofNumber" placeholder="ID Proof Number" required />
+
+        <button type="submit">Add Guest</button>
+      </form>
+
+      <div class="guest-list">
+        <h2>Guest List</h2>
+        <ul id="guestList"></ul>
+      </div>
+
+      <!-- Add Hotel Section -->
+      <h2>Add Hotel Details</h2>
+      <form id="hotelForm">
+        <input type="text" id="hotelName" placeholder="Hotel Name" required />
+        <input type="file" id="hotelLogo" accept="image/*" required />
+        <input type="text" id="hotelAddress" placeholder="Hotel Address" required />
+        <button type="submit">Add Hotel</button>
+      </form>
+
+      <div class="hotel-list">
+        <h2>Registered Hotels</h2>
+        <table id="hotelTable">
+          <thead>
+            <tr>
+              <th>Hotel Name</th>
+              <th>Address</th>
+              <th>Logo</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="hotelList"></tbody>
+        </table>
+      </div>
+
+      <footer>
+        <p>&copy; 2025 Digital Guest Onboarding. All rights reserved.</p>
+      </footer>
+    </div>
+
+    <!-- Inline JavaScript -->
+    <script>
+      // Guest Form Handling
+      const guestForm = document.getElementById('guestForm');
+      const guestList = document.getElementById('guestList');
+
+      guestForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Get form values
+        const guestName = document.getElementById('guestName').value;
+        const guestMobile = document.getElementById('guestMobile').value;
+        const guestAddress = document.getElementById('guestAddress').value;
+        const purposeOfVisit = document.getElementById('purposeOfVisit').value;
+        const stayFrom = document.getElementById('stayFrom').value;
+        const stayTo = document.getElementById('stayTo').value;
+        const emailId = document.getElementById('emailId').value;
+        const idProofNumber = document.getElementById('idProofNumber').value;
+
+        // Create list item
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>${guestName}</strong>
+          <span>Mobile: ${guestMobile}</span>
+          <span>Address: ${guestAddress}</span>
+          <span>Purpose: ${purposeOfVisit}</span>
+          <span>Stay: ${stayFrom} to ${stayTo}</span>
+          <span>Email: ${emailId}</span>
+          <span>ID Proof: ${idProofNumber}</span>
+        `;
+
+        // Add to guest list
+        guestList.appendChild(li);
+
+        // Clear form
+        guestForm.reset();
+      });
+
+      // Hotel Form Handling
+      const hotelForm = document.getElementById('hotelForm');
+      const hotelList = document.getElementById('hotelList');
+
+      hotelForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Get form values
+        const hotelName = document.getElementById('hotelName').value;
+        const hotelLogo = document.getElementById('hotelLogo').files[0];
+        const hotelAddress = document.getElementById('hotelAddress').value;
+
+        // Generate QR code
+        const qrCodeData = `${hotelName}-landing-page`;  // Placeholder landing page URL
+        const qrCodeContainer = document.createElement('div');
+        QRCode.toDataURL(qrCodeData, function (err, url) {
+          if (err) console.error(err);
+          qrCodeContainer.innerHTML = `<img src="${url}" alt="QR Code" />`;
+        });
+
+        // Create hotel row
+        const tr = document.createElement('tr');
+        const logoUrl = URL.createObjectURL(hotelLogo);
+
+        tr.innerHTML = `
+          <td>${hotelName}</td>
+          <td>${hotelAddress}</td>
+          <td><img src="${logoUrl}" class="hotel-logo" alt="Hotel Logo" /></td>
+          <td>${qrCodeContainer.innerHTML}</td>
+        `;
+
+        // Add to hotel table
+        hotelList.appendChild(tr);
+
+        // Clear form
+        hotelForm.reset();
+      });
+    </script>
+  </body>
+</html>
